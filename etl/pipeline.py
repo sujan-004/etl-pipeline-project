@@ -5,12 +5,8 @@ Orchestrates Extract, Transform, Load operations
 from etl.extract import Extractor
 from etl.transform import Transformer
 from etl.load import Loader
-import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 import time
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class ETLPipeline:
@@ -55,12 +51,8 @@ class ETLPipeline:
     
     def process_orders(self):
         """Process orders through ETL pipeline"""
-        logger.info("Starting order processing...")
-        
-        # Extract
         orders = self.extractor.extract_orders(self.last_run_time, limit=1000)
         if not orders:
-            logger.info("No new orders to process")
             return
         
         processed_count = 0
@@ -90,7 +82,6 @@ class ETLPipeline:
                 date_key = self.loader.get_date_key(cleaned_order['order_date'])
                 
                 if not all([customer_key, product_key, location_key, date_key]):
-                    logger.warning(f"Missing dimension keys for order {cleaned_order['order_id']}")
                     continue
                 
                 # Transform for fact table
@@ -102,21 +93,17 @@ class ETLPipeline:
                 if sales_data:
                     self.loader.insert_fact_sales(sales_data)
                     processed_count += 1
-                    
             except Exception as e:
-                logger.error(f"Error processing order {order.get('order_id')}: {e}")
+                print(f"Error processing order {order.get('order_id')}: {e}")
                 continue
         
-        logger.info(f"Processed {processed_count} orders successfully")
+        if processed_count > 0:
+            print(f"Processed {processed_count} orders")
     
     def process_cart_abandonment(self):
         """Process cart abandonment data"""
-        logger.info("Starting cart abandonment processing...")
-        
-        # Extract clicks with add_to_cart type
         clicks = self.extractor.extract_clicks(self.last_run_time, limit=1000)
         if not clicks:
-            logger.info("No new clicks to process")
             return
         
         processed_count = 0
@@ -149,40 +136,23 @@ class ETLPipeline:
                 if abandonment_data:
                     self.loader.insert_fact_cart_abandonment(abandonment_data)
                     processed_count += 1
-                    
             except Exception as e:
-                logger.error(f"Error processing click {click.get('click_id')}: {e}")
+                print(f"Error processing click {click.get('click_id')}: {e}")
                 continue
         
-        logger.info(f"Processed {processed_count} cart abandonment records")
+        if processed_count > 0:
+            print(f"Processed {processed_count} cart abandonment records")
     
     def run(self):
         """Run the complete ETL pipeline"""
-        logger.info("=" * 50)
-        logger.info("Starting ETL Pipeline Run")
-        logger.info("=" * 50)
-        
         start_time = datetime.now()
         
         try:
-            # Process orders
             self.process_orders()
-            
-            # Process cart abandonment
             self.process_cart_abandonment()
-            
-            # Update last run time
             self.last_run_time = start_time
-            
-            end_time = datetime.now()
-            duration = (end_time - start_time).total_seconds()
-            
-            logger.info("=" * 50)
-            logger.info(f"ETL Pipeline completed in {duration:.2f} seconds")
-            logger.info("=" * 50)
-            
         except Exception as e:
-            logger.error(f"ETL Pipeline failed: {e}")
+            print(f"ETL Pipeline failed: {e}")
             raise
         finally:
             self.extractor.close()
@@ -190,17 +160,17 @@ class ETLPipeline:
     
     def run_continuous(self, interval_seconds=30):
         """Run ETL pipeline continuously"""
-        logger.info(f"Starting continuous ETL pipeline (interval: {interval_seconds}s)")
+        print(f"Starting continuous ETL pipeline (interval: {interval_seconds}s)")
         
         while True:
             try:
                 self.run()
                 time.sleep(interval_seconds)
             except KeyboardInterrupt:
-                logger.info("ETL pipeline stopped by user")
+                print("ETL pipeline stopped")
                 break
             except Exception as e:
-                logger.error(f"Error in continuous ETL: {e}")
+                print(f"Error: {e}")
                 time.sleep(interval_seconds)
 
 

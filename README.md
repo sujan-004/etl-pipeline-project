@@ -257,10 +257,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## 🚀 GitHub Setup
-
-For detailed instructions on hosting this project on GitHub, see [GITHUB_SETUP.md](GITHUB_SETUP.md) or [GITHUB_QUICK_START.md](GITHUB_QUICK_START.md).
-
 ---
 
 **Built with ❤️ for Data Engineering Portfolio**

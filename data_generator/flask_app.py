@@ -8,11 +8,7 @@ import threading
 import time
 from data_generator.event_generator import EventGenerator
 from utils.database_connector import MySQLConnector
-import logging
 import json
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
@@ -46,7 +42,7 @@ def insert_order_mysql(order):
         )
         mysql_connector.execute_query(query, params)
     except Exception as e:
-        logger.error(f"Failed to insert order to MySQL: {e}")
+        print(f"Failed to insert order: {e}")
 
 
 def insert_click_mysql(click):
@@ -67,7 +63,7 @@ def insert_click_mysql(click):
         )
         mysql_connector.execute_query(query, params)
     except Exception as e:
-        logger.error(f"Failed to insert click to MySQL: {e}")
+        print(f"Failed to insert click: {e}")
 
 
 def insert_event_mysql(event):
@@ -87,7 +83,7 @@ def insert_event_mysql(event):
         )
         mysql_connector.execute_query(query, params)
     except Exception as e:
-        logger.error(f"Failed to insert event to MySQL: {e}")
+        print(f"Failed to insert event: {e}")
 
 
 def stream_events():
@@ -109,13 +105,10 @@ def stream_events():
             
             event_count += 3
             if event_count % 30 == 0:
-                logger.info(f"Streamed {event_count} events so far...")
-            
-            # Wait before next batch
-            time.sleep(2)  # Generate events every 2 seconds
-            
+                print(f"Streamed {event_count} events...")
+            time.sleep(2)
         except Exception as e:
-            logger.error(f"Error in stream_events: {e}")
+            print(f"Error: {e}")
             time.sleep(5)
 
 
@@ -203,7 +196,6 @@ def generate_event():
 
 if __name__ == '__main__':
     from config.config import FLASK_CONFIG
-    logger.info("Starting Flask data generator server...")
-    logger.info(f"Server running on http://{FLASK_CONFIG['host']}:{FLASK_CONFIG['port']}")
+    print(f"Starting server on http://{FLASK_CONFIG['host']}:{FLASK_CONFIG['port']}")
     app.run(host=FLASK_CONFIG['host'], port=FLASK_CONFIG['port'], debug=FLASK_CONFIG['debug'])
 

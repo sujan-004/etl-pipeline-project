@@ -11,10 +11,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.database_connector import MySQLConnector
-import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class PowerBIExporter:
@@ -28,7 +25,7 @@ class PowerBIExporter:
     
     def export_sales_trends(self):
         """Export sales trends data"""
-        logger.info("Exporting sales trends data...")
+        print("Exporting sales trends...")
         
         query = """
         SELECT 
@@ -59,12 +56,12 @@ class PowerBIExporter:
         
         filename = f"{self.export_dir}/sales_trends_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         df.to_csv(filename, index=False)
-        logger.info(f"Exported {len(df)} records to {filename}")
+        print(f"Exported {len(df)} records to {filename}")
         return filename
     
     def export_cart_abandonment(self):
         """Export cart abandonment data"""
-        logger.info("Exporting cart abandonment data...")
+        print("Exporting cart abandonment...")
         
         query = """
         SELECT 
@@ -93,12 +90,12 @@ class PowerBIExporter:
         
         filename = f"{self.export_dir}/cart_abandonment_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         df.to_csv(filename, index=False)
-        logger.info(f"Exported {len(df)} records to {filename}")
+        print(f"Exported {len(df)} records to {filename}")
         return filename
     
     def export_delivery_times(self):
         """Export delivery time analytics"""
-        logger.info("Exporting delivery time data...")
+        print("Exporting delivery times...")
         
         query = """
         SELECT 
@@ -130,12 +127,12 @@ class PowerBIExporter:
         
         filename = f"{self.export_dir}/delivery_times_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         df.to_csv(filename, index=False)
-        logger.info(f"Exported {len(df)} records to {filename}")
+        print(f"Exported {len(df)} records to {filename}")
         return filename
     
     def export_customer_analytics(self):
         """Export customer analytics"""
-        logger.info("Exporting customer analytics data...")
+        print("Exporting customer analytics...")
         
         query = """
         SELECT 
@@ -167,18 +164,18 @@ class PowerBIExporter:
         
         filename = f"{self.export_dir}/customer_analytics_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
         df.to_csv(filename, index=False)
-        logger.info(f"Exported {len(df)} records to {filename}")
+        print(f"Exported {len(df)} records to {filename}")
         return filename
     
     def export_all(self):
         """Export all datasets"""
-        logger.info("Exporting all datasets for Power BI...")
+        print("Exporting all datasets...")
         files = []
         files.append(self.export_sales_trends())
         files.append(self.export_cart_abandonment())
         files.append(self.export_delivery_times())
         files.append(self.export_customer_analytics())
-        logger.info(f"All exports completed. Files saved to {self.export_dir}/")
+        print(f"All exports completed. Files saved to {self.export_dir}/")
         return files
     
     def create_powerbi_query_file(self):
@@ -210,7 +207,7 @@ in
         filename = f"{self.export_dir}/powerbi_query.m"
         with open(filename, 'w') as f:
             f.write(query_template)
-        logger.info(f"Power BI query file created: {filename}")
+        print(f"Power BI query file created: {filename}")
         return filename
     
     def close(self):
@@ -224,12 +221,10 @@ if __name__ == "__main__":
         # Export all datasets
         exporter.export_all()
         
-        # Create Power BI query file
         exporter.create_powerbi_query_file()
-        
-        logger.info("Power BI export completed successfully!")
+        print("Power BI export completed!")
     except Exception as e:
-        logger.error(f"Export failed: {e}")
+        print(f"Export failed: {e}")
     finally:
         exporter.close()
 

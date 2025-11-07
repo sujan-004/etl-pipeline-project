@@ -28,10 +28,8 @@ class MySQLConnector:
                 charset=self.config['charset'],
                 cursorclass=pymysql.cursors.DictCursor
             )
-            logger.info("MySQL connection established")
             return self.connection
         except Exception as e:
-            logger.error(f"MySQL connection failed: {e}")
             raise
     
     def execute_query(self, query, params=None):
@@ -45,7 +43,6 @@ class MySQLConnector:
                 self.connection.commit()
                 return cursor.fetchall()
         except Exception as e:
-            logger.error(f"Query execution failed: {e}")
             self.connection.rollback()
             raise
     
@@ -60,7 +57,6 @@ class MySQLConnector:
                 self.connection.commit()
                 return cursor.rowcount
         except Exception as e:
-            logger.error(f"Batch execution failed: {e}")
             self.connection.rollback()
             raise
     
@@ -68,5 +64,4 @@ class MySQLConnector:
         """Close MySQL connection"""
         if self.connection:
             self.connection.close()
-            logger.info("MySQL connection closed")
 

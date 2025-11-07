@@ -3,19 +3,15 @@ MySQL Database Setup Script
 """
 import pymysql
 from config.config import MYSQL_CONFIG
-import logging
 import os
 from datetime import datetime, timedelta
 import re
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 def populate_date_dimension(connection):
     """Populate date dimension table"""
     try:
-        logger.info("Populating date dimension...")
+        print("Populating date dimension...")
         start_date = datetime(2020, 1, 1)
         end_date = datetime(2030, 12, 31)
         current_date = start_date
@@ -58,20 +54,19 @@ def populate_date_dimension(connection):
                 if len(batch) >= batch_size:
                     cursor.executemany(insert_query, batch)
                     connection.commit()
-                    logger.info(f"Inserted {len(batch)} date records...")
+                    print(f"Inserted {len(batch)} date records...")
                     batch = []
                 
                 current_date += timedelta(days=1)
             
-            # Insert remaining records
             if batch:
                 cursor.executemany(insert_query, batch)
                 connection.commit()
-                logger.info(f"Inserted {len(batch)} date records...")
+                print(f"Inserted {len(batch)} date records...")
         
-        logger.info("Date dimension populated successfully")
+        print("Date dimension populated")
     except Exception as e:
-        logger.error(f"Failed to populate date dimension: {e}")
+        print(f"Failed to populate date dimension: {e}")
         raise
 
 
@@ -128,8 +123,6 @@ def execute_sql_file(connection, file_path):
         
         i += 1
     
-    # Execute statements
-    logger.info(f"Found {len(statements)} SQL statements to execute")
     executed = 0
     errors = 0
     
@@ -143,40 +136,28 @@ def execute_sql_file(connection, file_path):
                 connection.commit()
                 executed += 1
                 
-                # Log CREATE TABLE statements
                 if 'CREATE TABLE' in statement.upper():
-                    # Extract table name
                     match = re.search(r'CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?(\w+)`?', statement, re.IGNORECASE)
                     if match:
-                        table_name = match.group(1)
-                        logger.info(f"  ✅ Created table: {table_name}")
+                        print(f"Created table: {match.group(1)}")
                     
             except pymysql.err.ProgrammingError as e:
                 error_msg = str(e).lower()
                 # Ignore "table doesn't exist" for DROP TABLE IF EXISTS
                 if 'drop table' in statement.lower() and ('doesn\'t exist' in error_msg or 'unknown table' in error_msg):
                     continue
-                # Ignore "already exists" for CREATE TABLE IF NOT EXISTS
                 elif 'already exists' in error_msg:
-                    match = re.search(r'CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?(\w+)`?', statement, re.IGNORECASE)
-                    if match:
-                        logger.info(f"  ℹ️  Table {match.group(1)} already exists")
                     continue
                 else:
-                    logger.error(f"  ❌ Error in statement {i}: {e}")
-                    logger.error(f"  Statement: {statement[:150]}...")
+                    print(f"Error in statement {i}: {e}")
                     errors += 1
-                    # Don't raise - continue with other statements
             except Exception as e:
-                error_msg = str(e).lower()
                 if 'drop table' in statement.lower():
-                    continue  # Ignore DROP errors
-                logger.warning(f"  ⚠️  Warning in statement {i}: {e}")
-                logger.debug(f"  Statement: {statement[:150]}...")
+                    continue
+                errors += 1
     
-    logger.info(f"Executed {executed} statements successfully")
     if errors > 0:
-        logger.warning(f"Encountered {errors} errors (non-critical)")
+        print(f"Encountered {errors} errors")
     
     return executed, errors
 
@@ -194,9 +175,8 @@ def setup_database():
         )
         
         with connection.cursor() as cursor:
-            # Create database if it doesn't exist
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {MYSQL_CONFIG['database']} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
-            logger.info(f"✅ Database '{MYSQL_CONFIG['database']}' created or already exists")
+            print(f"Database '{MYSQL_CONFIG['database']}' ready")
         
         connection.close()
         
@@ -210,22 +190,14 @@ def setup_database():
             charset='utf8mb4'
         )
         
-        # Execute SQL schema file
         schema_path = os.path.join(os.path.dirname(__file__), 'schemas.sql')
-        logger.info(f"Reading schema file: {schema_path}")
+        print("Creating tables...")
         execute_sql_file(connection, schema_path)
         
-        # Verify dim_date table exists
-        logger.info("Verifying tables were created...")
         with connection.cursor() as cursor:
             cursor.execute("SHOW TABLES LIKE 'dim_date'")
             result = cursor.fetchone()
             if not result:
-                logger.error("❌ ERROR: dim_date table was not created!")
-                logger.error("This might be due to SQL parsing issues.")
-                logger.error("Trying to create dim_date table manually...")
-                
-                # Create dim_date table manually as fallback
                 create_dim_date = """
                 CREATE TABLE IF NOT EXISTS dim_date (
                     date_key INT PRIMARY KEY,
@@ -245,21 +217,13 @@ def setup_database():
                 """
                 cursor.execute(create_dim_date)
                 connection.commit()
-                logger.info("✅ dim_date table created manually")
-            else:
-                logger.info("✅ dim_date table exists")
         
-        # Populate date dimension
         populate_date_dimension(connection)
-        
-        logger.info("")
-        logger.info("=" * 70)
-        logger.info("✅ Database schema created successfully!")
-        logger.info("=" * 70)
+        print("Database setup completed!")
         connection.close()
         
     except Exception as e:
-        logger.error(f"❌ Database setup failed: {e}")
+        print(f"Database setup failed: {e}")
         raise
 
 

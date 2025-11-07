@@ -17,11 +17,6 @@ MYSQL_CONFIG = {
 }
 
 
-KAFKA_CONFIG = {
-    'bootstrap_servers': os.getenv('KAFKA_SERVERS', 'localhost:9092'),
-    'topic': 'ecommerce-events'
-}
-
 # Flask Generator Configuration
 FLASK_CONFIG = {
     'host': '0.0.0.0',
