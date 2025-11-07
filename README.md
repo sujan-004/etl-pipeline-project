@@ -92,8 +92,11 @@ etl-pipeline-project/
 
 3. **Install dependencies**
    ```bash
+   pip install --upgrade pip
    pip install -r requirements.txt
    ```
+   
+   **Note:** If you encounter version conflicts, the requirements use flexible version ranges that work with Python 3.8+.
 
 4. **Configure database**
    
